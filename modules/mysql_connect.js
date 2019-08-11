@@ -1,5 +1,4 @@
 let mysql = require('mysql');
-
 let db_config = require('../config/db.json');
 
 let connection = mysql.createConnection({
