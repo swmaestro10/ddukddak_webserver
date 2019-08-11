@@ -3,7 +3,8 @@ let express = require('express');
 let bodyParser = require('body-parser');
 let g_function = require('./modules/function_global');
 let module_db = require('./modules/mysql_connect');
-let user_route = require('./modules/route_user');
+let user_router = require('./modules/router_user');
+let class_router = require('./modules/router_class');
 
 let main_template = "`" + fs.readFileSync('./html/main.html') + "`";
 let main_card_lecture_template = "`" + fs.readFileSync('./html/main_card_lecture.html') + "`";
@@ -47,40 +48,8 @@ app.get('/', function(request, response) {
 
 });
 
-app.get('/user/login', function(request, response) {
-
-    user_route.login(request, function (result) {
-
-        response.writeHead(200);
-        response.end(JSON.stringify(result));
-
-    });
-
-});
-
-app.get('/user/data', function (request, response) {
-
-    let token = request.body.token;
-
-    user_route.data(token, function (result) {
-
-        response.writeHead(200);
-        response.end(JSON.stringify(result));
-
-    })
-
-});
-
-app.get('/test/token', function(request, response) {
-
-    user_route.tokenCheck(request.body.token, function (result) {
-
-        response.writeHead(200);
-        response.end(JSON.stringify(result));
-
-    });
-
-});
+app.use('/user', user_router);
+app.use('/class', class_router);
 
 // redirect
 app.get('*', function(request, response) {
@@ -89,4 +58,4 @@ app.get('*', function(request, response) {
 
 });
 
-app.listen(80, () => console.log('Started web on port 80!'));
+app.listen(80, () => console.log('DDUK-DDUAK-Learning running on port 80!'));

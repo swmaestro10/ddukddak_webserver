@@ -5,30 +5,30 @@ let aes_config = require('../config/aes.json');
 let query_config = require('../config/query.json');
 
 let query_login_template = "`" + query_config.check_login + "`";
-let query_data_template = "`" + query_config.get_data + "`";
+let query_info_template = "`" + query_config.get_info + "`";
 
 function checkLogin(email, pw, callback) {
 
     let query_login = g_function.eval_template(query_login_template, {email : email, pw : pw});
 
-    module_db.executeDB(query_login, function(result){
+    module_db.executeDB(query_login, function(result) {
 
-        let data = JSON.parse( JSON.stringify(result) );
+        let json_login = JSON.parse( JSON.stringify(result) );
 
-        if(data.length > 0) callback(data[0].id);
+        if(json_login.length > 0) callback( json_login[0].id );
         else callback(null);
 
     });
 
 }
 
-function getData(id, callback) {
+function getInfo(id, callback) {
 
-    let query_data = g_function.eval_template(query_data_template, {id : id});
+    let query_info = g_function.eval_template(query_info_template, {id : id});
 
-    module_db.executeDB(query_data, function(result){
+    module_db.executeDB(query_info, function(result) {
 
-        if(result.length > 0) callback(JSON.stringify(result[0]));
+        if(result.length > 0) callback( JSON.stringify(result[0]) );
         else callback(null);
 
     });
@@ -37,7 +37,7 @@ function getData(id, callback) {
 
 function encryptToken(email, pw, data, callback) {
 
-    let original_json =
+    let json_token_string =
         `{ 
         "${Math.random()}":"${Math.random()}", 
         "email":"${email}", 
@@ -47,7 +47,7 @@ function encryptToken(email, pw, data, callback) {
         "data":"${data}", 
         "${Math.random()}":"${Math.random()}" 
         }`;
-    let encrypted = aes256.encrypt(aes_config.KEY, original_json);
+    let encrypted = aes256.encrypt(aes_config.KEY, json_token_string);
     callback(encrypted);
 
 }
@@ -70,12 +70,12 @@ module.exports = {
 
         checkLogin(email, pw, function(id) {
 
-            if(id === null) callback(JSON.parse( `{ "login":0 }` ));
+            if(id === null) callback( JSON.parse( `{ "login":0 }` ) );
             else {
 
                 encryptToken(email, pw, data, function(token) {
 
-                    callback(JSON.parse( `{ "login":1, "token":"${token}" }` ));
+                    callback( JSON.parse( `{ "login":1, "token":"${token}" }` ) );
 
                 });
 
@@ -85,16 +85,16 @@ module.exports = {
 
     },
 
-    data : function(token, callback) {
+    info : function(token, callback) {
 
         this.tokenCheck(token, function (json_login) {
 
-            if(json_login.id === null) callback(JSON.parse( `{ "login":0 }` ));
+            if(json_login.id === null) callback( JSON.parse( `{ "login":0 }` ) );
             else {
 
-                getData(json_login.id, function (data){
+                getInfo(json_login.id, function (json_info){
 
-                    callback(JSON.parse( `[ { "login":1 }, ${data} ]` ));
+                    callback( JSON.parse( `[ { "login":1 }, ${json_info} ]` ) );
 
                 });
 
@@ -114,8 +114,8 @@ module.exports = {
 
             checkLogin(email, pw, function(id) {
 
-                if(id === null) callback(JSON.parse( `{ "login":0 }` ));
-                else callback(JSON.parse( `{ "login":1, "id":${id} }` ));
+                if(id === null) callback( JSON.parse( `{ "login":0 }` ) );
+                else callback( JSON.parse( `{ "login":1, "id":${id} }` ) );
 
             });
 
