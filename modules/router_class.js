@@ -29,4 +29,59 @@ router.get('/my', function (request, response) {
 
 });
 
+router.get('/all', function (request, response) {
+
+    let token = request.body.token;
+
+    class_function.all(token, function (result) {
+
+        response.writeHead(200);
+        response.end(JSON.stringify(result));
+
+    })
+
+});
+
+router.get('/enter', function (request, response) {
+
+    let token = request.body.token;
+    let classs = request.body.class;
+
+    class_function.enter(token, classs, function (result) {
+
+        response.writeHead(200);
+        response.end(JSON.stringify(result));
+
+    })
+
+});
+
+router.get('/sub/id/:id', function (request, response) {
+
+    let id = request.params.id;
+
+    class_function.subclass(id, function (result) {
+
+        response.writeHead(200);
+        response.end(JSON.stringify(result));
+
+    })
+
+});
+
+router.get('/sub/submit', function (request, response) {
+
+    let token = request.body.token;
+    let subclass = request.body.subclass;
+    let code = request.body.code;
+
+    class_function.submit(token, subclass, code, function (result) {
+
+        response.writeHead(200);
+        response.end(JSON.stringify(result));
+
+    })
+
+});
+
 module.exports = router;

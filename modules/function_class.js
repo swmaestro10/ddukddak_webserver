@@ -5,6 +5,8 @@ let query_config = require('../config/query.json');
 
 let query_info_template = "`" + query_config.get_class_info + "`";
 let query_my_template = "`" + query_config.get_my_class + "`";
+let query_subclass_of_parent_template = "`" + query_config.get_subclass_of_parent + "`";
+let query_subclass_info_template = "`" + query_config.get_subclass_info + "`";
 
 function getClass(classs, callback) {
 
@@ -85,6 +87,53 @@ function getMyList(user, callback) {
 
 }
 
+function enterClass(user, classs, callback) {
+
+    let query_info = g_function.eval_template(query_info_template, {classs : classs});
+    let query_subclass_of_parent = g_function.eval_template(query_subclass_of_parent_template, {classs : classs});
+
+    module_db.executeDB(query_info, function(result){
+
+        let json_class = JSON.parse( JSON.stringify(result) );
+
+        if(json_class.length > 0) {
+
+            module_db.executeDB(query_subclass_of_parent, function (result) {
+
+                let json_subclass = JSON.parse( JSON.stringify(result) );
+
+                callback( `[ ${JSON.stringify(json_class[0])}, ${JSON.stringify(json_subclass)} ]` );
+
+            });
+
+        }
+        else callback(null);
+
+    });
+
+}
+
+function getSubClass(subclass, callback) {
+
+    let query_subclass_info = g_function.eval_template(query_subclass_info_template, {subclass : subclass});
+
+    module_db.executeDB(query_subclass_info, function(result){
+
+        let json_subclass = JSON.parse( JSON.stringify(result) );
+
+        if(json_subclass.length > 0) callback( JSON.stringify(json_subclass) );
+        else callback(null);
+
+    });
+
+}
+
+function submitCode(user, subclass, code, callback) {
+
+    callback( '{"result":"ok"}' )
+
+}
+
 module.exports = {
 
     class : function (id, callback) {
@@ -105,6 +154,73 @@ module.exports = {
             else {
 
                 getMyList(json_login.id, function (json_result_string) {
+
+                    callback( JSON.parse(json_result_string) );
+
+                });
+
+            }
+
+        });
+
+    },
+
+    all : function (token, callback) {
+
+        user_function.tokenCheck(token, function (json_login) {
+
+            if(json_login.id === null) callback( JSON.parse( `{ "login":0 }` ) );
+            else {
+
+                getAllClass(function (json_result_string) {
+
+                    callback( JSON.parse(json_result_string) );
+
+                });
+
+            }
+
+        });
+
+    },
+
+    enter : function (token, classs, callback) {
+
+        user_function.tokenCheck(token, function (json_login) {
+
+            if(json_login.id === null) callback( JSON.parse( `{ "login":0 }` ) );
+            else {
+
+                enterClass(json_login.id, classs, function (json_result_string) {
+
+                    callback( JSON.parse(json_result_string) );
+
+                });
+
+            }
+
+        });
+
+    },
+
+    subclass : function (id, callback) {
+
+        getSubClass(id, function (json_subclass_string) {
+
+            callback( JSON.parse(json_subclass_string) );
+
+        });
+
+    },
+
+    submit : function (token, subclass, code, callback) {
+
+        user_function.tokenCheck(token, function (json_login) {
+
+            if(json_login.id === null) callback( JSON.parse( `{ "login":0 }` ) );
+            else {
+
+                submitCode(json_login.id, subclass, code, function (json_result_string) {
 
                     callback( JSON.parse(json_result_string) );
 

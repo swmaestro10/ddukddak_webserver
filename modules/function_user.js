@@ -5,6 +5,7 @@ let aes_config = require('../config/aes.json');
 let query_config = require('../config/query.json');
 
 let query_login_template = "`" + query_config.check_login + "`";
+let query_signup_template = "`" + query_config.create_user + "`";
 let query_info_template = "`" + query_config.get_info + "`";
 
 function checkLogin(email, pw, callback) {
@@ -17,6 +18,18 @@ function checkLogin(email, pw, callback) {
 
         if(json_login.length > 0) callback( json_login[0].id );
         else callback(null);
+
+    });
+
+}
+
+function createUser(email, pw, name, callback) {
+
+    let query_signup = g_function.eval_template(query_signup_template, {email : email, pw : pw, name : name});
+
+    module_db.executeDB(query_signup, function(result) {
+
+        callback( 1 );
 
     });
 
@@ -62,11 +75,7 @@ function decryptToken(encrypted, callback) {
 
 module.exports = {
 
-    login : function(request, callback) {
-
-        let email = request.body.email;
-        let pw = request.body.pw;
-        let data = 'dddddddddd';
+    login : function(email, pw, data, callback) {
 
         checkLogin(email, pw, function(id) {
 
@@ -80,6 +89,16 @@ module.exports = {
                 });
 
             }
+
+        });
+
+    },
+
+    signup : function(email, pw, name, callback) {
+
+        createUser(email, pw, name, function (result) {
+
+            callback( JSON.parse( `{ "ok":${result} }` ) );
 
         });
 

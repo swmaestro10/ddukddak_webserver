@@ -5,7 +5,26 @@ let router = express.Router();
 
 router.get('/login', function(request, response) {
 
-    user_function.login(request, function (result) {
+    let email = request.body.email;
+    let pw = request.body.pw;
+    let data = 'dddddddddd';
+
+    user_function.login(email, pw, data, function (result) {
+
+        response.writeHead(200);
+        response.end(JSON.stringify(result));
+
+    });
+
+});
+
+router.get('/signup', function(request, response) {
+
+    let email = request.body.email;
+    let pw = request.body.pw;
+    let name = request.body.name;
+
+    user_function.signup(email, pw, name, function (result) {
 
         response.writeHead(200);
         response.end(JSON.stringify(result));
