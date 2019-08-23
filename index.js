@@ -1,6 +1,7 @@
 let fs = require('fs');
 let express = require('express');
 let bodyParser = require('body-parser');
+let cors = require('cors');
 let g_function = require('./modules/function_global');
 let module_db = require('./modules/mysql_connect');
 let user_router = require('./modules/router_user');
@@ -19,6 +20,7 @@ module_db.startDB();
 
 let app = express();
 app.use(bodyParser.json());
+app.use(cors());
 
 // static files
 app.use('/img', express.static(__dirname + '/img'));

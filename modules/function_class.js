@@ -1,3 +1,4 @@
+let request_send = require('request');
 let module_db = require('../modules/mysql_connect');
 let user_function = require('./function_user');
 let g_function = require('../modules/function_global');
@@ -130,7 +131,27 @@ function getSubClass(subclass, callback) {
 
 function submitCode(user, subclass, code, callback) {
 
-    callback( '{"result":"ok"}' )
+    let host = '';
+    if(subclass === 1) host = 'http://gpu.ddukddak.io:8801/run';
+
+    request_send({
+
+        uri: host,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        },
+        form: {
+            code: code
+        }
+
+    }, function (err, res, body) {
+
+        if(err) console.log(err);
+
+        callback( `{ "result" : "${body}" }` )
+
+    });
 
 }
 

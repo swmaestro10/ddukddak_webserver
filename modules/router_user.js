@@ -3,7 +3,7 @@ let user_function = require('./function_user');
 
 let router = express.Router();
 
-router.get('/login', function(request, response) {
+router.post('/signin', function(request, response) {
 
     let email = request.body.email;
     let pw = request.body.pw;
@@ -18,7 +18,7 @@ router.get('/login', function(request, response) {
 
 });
 
-router.get('/signup', function(request, response) {
+router.post('/signup', function(request, response) {
 
     let email = request.body.email;
     let pw = request.body.pw;
@@ -33,7 +33,7 @@ router.get('/signup', function(request, response) {
 
 });
 
-router.get('/info', function (request, response) {
+router.post('/info', function (request, response) {
 
     let token = request.body.token;
 

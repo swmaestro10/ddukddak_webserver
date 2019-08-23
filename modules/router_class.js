@@ -16,7 +16,7 @@ router.get('/id/:id', function (request, response) {
 
 });
 
-router.get('/my', function (request, response) {
+router.post('/my', function (request, response) {
 
     let token = request.body.token;
 
@@ -29,7 +29,7 @@ router.get('/my', function (request, response) {
 
 });
 
-router.get('/all', function (request, response) {
+router.post('/all', function (request, response) {
 
     let token = request.body.token;
 
@@ -42,7 +42,7 @@ router.get('/all', function (request, response) {
 
 });
 
-router.get('/enter', function (request, response) {
+router.post('/enter', function (request, response) {
 
     let token = request.body.token;
     let classs = request.body.class;
@@ -69,7 +69,7 @@ router.get('/sub/id/:id', function (request, response) {
 
 });
 
-router.get('/sub/submit', function (request, response) {
+router.post('/sub/submit', function (request, response) {
 
     let token = request.body.token;
     let subclass = request.body.subclass;
