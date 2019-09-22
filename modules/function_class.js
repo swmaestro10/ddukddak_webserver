@@ -1,4 +1,5 @@
 let request_send = require('request');
+let io = require('socket.io-client');
 let module_db = require('../modules/mysql_connect');
 let user_function = require('./function_user');
 let g_function = require('../modules/function_global');
@@ -129,27 +130,45 @@ function getSubClass(subclass, callback) {
 
 }
 
-function submitCode(user, subclass, code, callback) {
+    function submitCode(user, subclass, code) {
 
-    let host = '';
-    if(subclass === 1) host = 'http://gpu.ddukddak.io:8801/run';
+    console.log(code);
 
-    request_send({
+    let socket = io.connect('http://gpu.ddukddak.io:8801/code', {reconnect: true});
 
-        uri: host,
-        method: 'POST',
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        },
-        form: {
-            code: code
+    socket.on('response', function (json) {
+
+        if(json !== undefined) {
+
+            // about connection
+            if(json.data === 0) { // connected
+
+                if(json.status === 1) {
+
+                    socket.emit('start', {'sessionId':'this_is_id'});
+
+                    socket.emit('run', {'code':code});
+
+                } else if(json.status === 2) { // close connection
+
+                    console.log('DONE!');
+
+                    socket.close();
+
+                }
+
+            }
+            else if(json.data === 1) { // about log
+
+                console.log(json.text);
+
+            } else if(json.data === 2) { // about result
+
+                console.log(json.result);
+
+            }
+
         }
-
-    }, function (err, res, body) {
-
-        if(err) console.log(err);
-
-        callback( `{ "result" : "${body}" }` )
 
     });
 
@@ -239,15 +258,7 @@ module.exports = {
         user_function.tokenCheck(token, function (json_login) {
 
             if(json_login.id === null) callback( JSON.parse( `{ "login":0 }` ) );
-            else {
-
-                submitCode(json_login.id, subclass, code, function (json_result_string) {
-
-                    callback( JSON.parse(json_result_string) );
-
-                });
-
-            }
+            else submitCode(json_login.id, subclass, code);
 
         });
 

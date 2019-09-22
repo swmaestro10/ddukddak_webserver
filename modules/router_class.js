@@ -75,12 +75,8 @@ router.post('/sub/submit', function (request, response) {
     let subclass = request.body.subclass;
     let code = request.body.code;
 
-    class_function.submit(token, subclass, code, function (result) {
-
-        response.writeHead(200);
-        response.end(JSON.stringify(result));
-
-    })
+    // socket gpu-web, web-front
+    class_function.submit(token, subclass, code);
 
 });
 
