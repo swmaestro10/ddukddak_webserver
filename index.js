@@ -7,6 +7,7 @@ let g_function = require('./modules/function_global');
 let module_db = require('./modules/mysql_connect');
 let user_router = require('./modules/router_user');
 let class_router = require('./modules/router_class');
+let class_function = require('./modules/function_class');
 
 module_db.startDB();
 
@@ -38,16 +39,15 @@ app.listen(80, () => console.log('DDUK-DDUAK-Learning running on port 80!'));
 
 // socket server web-front
 let server = io.listen(8800);
-let sequenceNumberByClient = new Map();
 
-console.log("socket listening........");
+server.on("connection", (socket) => {
 
-server.on("submit", (socket) => {
+    socket.on("submit", (json) => {
 
-    console.log("connected!");
+        console.log(json);
 
-    sequenceNumberByClient.set(socket, 1);
+        class_function.submit(json.token, json.subclass, json.code, socket);
 
-    console.log(socket);
+    });
 
 });

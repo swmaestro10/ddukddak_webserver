@@ -4,6 +4,8 @@ let module_db = require('../modules/mysql_connect');
 let user_function = require('./function_user');
 let g_function = require('../modules/function_global');
 let query_config = require('../config/query.json');
+let fs = require('fs');
+let path = require('path');
 
 let query_info_template = "`" + query_config.get_class_info + "`";
 let query_my_template = "`" + query_config.get_my_class + "`";
@@ -130,7 +132,7 @@ function getSubClass(subclass, callback) {
 
 }
 
-    function submitCode(user, subclass, code) {
+    function submitCode(user, subclass, code, socket_front) {
 
     console.log(code);
 
@@ -147,9 +149,14 @@ function getSubClass(subclass, callback) {
 
                     socket.emit('start', {'sessionId':'this_is_id'});
 
-                    socket.emit('run', {'code':code});
+                    let imgPath = path.join(__dirname, '..', 'img', 'test_7.png');
+                    let image = fs.readFileSync(imgPath);
+
+                    socket.emit('run', {'code':code, 'img':image});
 
                 } else if(json.status === 2) { // close connection
+
+                    socket_front.emit('result', {'text':'DONE!'});
 
                     console.log('DONE!');
 
@@ -157,14 +164,13 @@ function getSubClass(subclass, callback) {
 
                 }
 
-            }
-            else if(json.data === 1) { // about log
+            } else if(json.data === 1) { // about log
 
-                console.log(json.text);
+                socket_front.emit('result', {'text':json.text});
 
             } else if(json.data === 2) { // about result
 
-                console.log(json.result);
+                socket_front.emit('result', {'text':json.result});
 
             }
 
@@ -253,12 +259,12 @@ module.exports = {
 
     },
 
-    submit : function (token, subclass, code, callback) {
+    submit : function (token, subclass, code, socket_front) {
 
         user_function.tokenCheck(token, function (json_login) {
 
-            if(json_login.id === null) callback( JSON.parse( `{ "login":0 }` ) );
-            else submitCode(json_login.id, subclass, code);
+            if(json_login.id === null) console.log( JSON.parse( `{ "login":0 }` ) );
+            else submitCode(json_login.id, subclass, code, socket_front);
 
         });
 
