@@ -1,5 +1,7 @@
 let express = require('express');
+let multer = require('multer');
 let class_function = require('./function_class');
+let upload = require('./file_upload');
 
 let router = express.Router();
 
@@ -77,6 +79,32 @@ router.post('/sub/submit', function (request, response) {
 
     // socket gpu-web, web-front
     class_function.submit(token, subclass, code);
+
+});
+
+router.post('/sub/image', function (request, response, next) {
+
+    upload(request, response, function(err) {
+
+        // handle error
+        if (err instanceof multer.MulterError) return next(err);
+        else if (err) return next(err);
+
+        // image file path
+        let file = request.file.filename;
+
+        // style
+        let style = request.body.style;
+
+        class_function.submitImage(file, style, function (result) {
+
+            response.writeHead(200, {"Context-Type": "image/*"});
+            response.write(result);
+            response.end();
+
+        });
+
+    });
 
 });
 

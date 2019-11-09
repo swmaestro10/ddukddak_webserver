@@ -1,11 +1,10 @@
-let request_send = require('request');
 let io = require('socket.io-client');
 let module_db = require('../modules/mysql_connect');
 let user_function = require('./function_user');
 let g_function = require('../modules/function_global');
 let query_config = require('../config/query.json');
 let fs = require('fs');
-let path = require('path');
+let requestSend = require('request');
 
 let query_info_template = "`" + query_config.get_class_info + "`";
 let query_my_template = "`" + query_config.get_my_class + "`";
@@ -132,51 +131,52 @@ function getSubClass(subclass, callback) {
 
 }
 
-    function submitCode(user, subclass, code, socket_front) {
+function submitCode(user, subclass, code, socket_front) {
 
-    console.log(code);
+    if(subclass === 3) { // mnist
 
-    let socket = io.connect('http://gpu.ddukddak.io:8801/code', {reconnect: true});
+        let socket = io.connect('http://gpu.ddukddak.io:8801/code', {reconnect: true});
 
-    socket.on('response', function (json) {
+        socket.on('response', function (json) {
 
-        if(json !== undefined) {
+            if(json !== undefined) {
 
-            // about connection
-            if(json.data === 0) { // connected
+                // about connection
+                if(json.data === 0) { // connected
 
-                if(json.status === 1) {
+                    if(json.status === 1) {
 
-                    socket.emit('start', {'sessionId':'this_is_id'});
+                        socket.emit('start', {'sessionId':user});
 
-                    let imgPath = path.join(__dirname, '..', 'img', 'test_7.png');
-                    let image = fs.readFileSync(imgPath);
+                        socket.emit('run', {'code':code});
 
-                    socket.emit('run', {'code':code, 'img':image});
+                    } else if(json.status === 2) { // close connection
 
-                } else if(json.status === 2) { // close connection
+                        socket_front.emit('result', {'text':'DONE!'});
 
-                    socket_front.emit('result', {'text':'DONE!'});
+                        console.log('DONE!');
 
-                    console.log('DONE!');
+                        socket.close();
 
-                    socket.close();
+                    }
+
+                } else if(json.data === 1) { // about log
+
+                    socket_front.emit('result', {'text':json.text});
+
+                } else if(json.data === 2) { // about result
+
+                    socket_front.emit('result', {'text':json.result});
 
                 }
 
-            } else if(json.data === 1) { // about log
-
-                socket_front.emit('result', {'text':json.text});
-
-            } else if(json.data === 2) { // about result
-
-                socket_front.emit('result', {'text':json.result});
-
             }
 
-        }
+        });
 
-    });
+    } else if(subclass === 4) {
+
+    }
 
 }
 
@@ -265,6 +265,37 @@ module.exports = {
 
             if(json_login.id === null) console.log( JSON.parse( `{ "login":0 }` ) );
             else submitCode(json_login.id, subclass, code, socket_front);
+
+        });
+
+    },
+
+    submitImage : function (file, style, callback) {
+
+        fs.readFile(`./uploads/${file}`, (err, data) => {
+
+            requestSend({
+
+                method: 'POST',
+                url: 'http://gpu.ddukddak.io:8802/run',
+                headers:
+                    {
+                        'cache-control': 'no-cache',
+                        'Content-Type': 'application/json'
+                    },
+                body:
+                    {
+                        image: data.toString('base64')
+                    },
+                json: true
+
+            }, function (error, res, body) {
+
+                if (error) throw new Error(error);
+
+                callback(body);
+
+            });
 
         });
 
