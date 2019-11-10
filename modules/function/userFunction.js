@@ -1,18 +1,18 @@
 let aes256 = require('aes256');
-let module_db = require('../modules/mysql_connect');
-let g_function = require('../modules/function_global');
-let aes_config = require('../config/aes.json');
-let query_config = require('../config/query.json');
+let mysqlConnector = require('../mysqlConnector');
+let globalFunction = require('./globalFunction');
+let aesConfig = require('../../config/aes.json');
+let queryConfig = require('../../config/query.json');
 
-let query_login_template = "`" + query_config.check_login + "`";
-let query_signup_template = "`" + query_config.create_user + "`";
-let query_info_template = "`" + query_config.get_info + "`";
+let query_login_template = "`" + queryConfig.check_login + "`";
+let query_signup_template = "`" + queryConfig.create_user + "`";
+let query_info_template = "`" + queryConfig.get_info + "`";
 
 function checkLogin(email, pw, callback) {
 
-    let query_login = g_function.eval_template(query_login_template, {email : email, pw : pw});
+    let query_login = globalFunction.evalTemplate(query_login_template, {email : email, pw : pw});
 
-    module_db.executeDB(query_login, function(result) {
+    mysqlConnector.executeDB(query_login, function(result) {
 
         let json_login = JSON.parse( JSON.stringify(result) );
 
@@ -25,9 +25,9 @@ function checkLogin(email, pw, callback) {
 
 function createUser(email, pw, name, callback) {
 
-    let query_signup = g_function.eval_template(query_signup_template, {email : email, pw : pw, name : name});
+    let query_signup = globalFunction.evalTemplate(query_signup_template, {email : email, pw : pw, name : name});
 
-    module_db.executeDB(query_signup, function(result) {
+    mysqlConnector.executeDB(query_signup, function(result) {
 
         callback( 1 );
 
@@ -37,9 +37,9 @@ function createUser(email, pw, name, callback) {
 
 function getInfo(id, callback) {
 
-    let query_info = g_function.eval_template(query_info_template, {id : id});
+    let query_info = globalFunction.evalTemplate(query_info_template, {id : id});
 
-    module_db.executeDB(query_info, function(result) {
+    mysqlConnector.executeDB(query_info, function(result) {
 
         if(result.length > 0) callback( JSON.stringify(result[0]) );
         else callback(null);
@@ -60,14 +60,14 @@ function encryptToken(email, pw, data, callback) {
         "data":"${data}", 
         "${Math.random()}":"${Math.random()}" 
         }`;
-    let encrypted = aes256.encrypt(aes_config.KEY, json_token_string);
+    let encrypted = aes256.encrypt(aesConfig.KEY, json_token_string);
     callback(encrypted);
 
 }
 
 function decryptToken(encrypted, callback) {
 
-    let decrypted = aes256.decrypt(aes_config.KEY, encrypted);
+    let decrypted = aes256.decrypt(aesConfig.KEY, encrypted);
     let decrypted_json = JSON.parse(decrypted);
     callback(decrypted_json);
 

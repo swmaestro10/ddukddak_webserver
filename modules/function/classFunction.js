@@ -1,21 +1,16 @@
-let io = require('socket.io-client');
-let module_db = require('../modules/mysql_connect');
-let user_function = require('./function_user');
-let g_function = require('../modules/function_global');
-let query_config = require('../config/query.json');
 let fs = require('fs');
 let requestSend = require('request');
-
-let query_info_template = "`" + query_config.get_class_info + "`";
-let query_my_template = "`" + query_config.get_my_class + "`";
-let query_subclass_of_parent_template = "`" + query_config.get_subclass_of_parent + "`";
-let query_subclass_info_template = "`" + query_config.get_subclass_info + "`";
+let socketClient = require('socket.io-client');
+let mysqlConnector = require('../mysqlConnector');
+let userFunction = require('./userFunction');
+let globalFunction = require('./globalFunction');
+let queryConfig = require('../../config/query.json');
 
 function getClass(classs, callback) {
 
-    let query_info = g_function.eval_template(query_info_template, {classs : classs});
+    let query_info = globalFunction.evalTemplate(globalFunction.makeTemplate(queryConfig.get_class_info), {classs : classs});
 
-    module_db.executeDB(query_info, function(result){
+    mysqlConnector.executeDB(query_info, function(result){
 
         let json_class = JSON.parse( JSON.stringify(result) );
 
@@ -28,9 +23,9 @@ function getClass(classs, callback) {
 
 function getAllClass(callback) {
 
-    let query_all = query_config.get_all_class;
+    let query_all = queryConfig.get_all_class;
 
-    module_db.executeDB(query_all, function(result){
+    mysqlConnector.executeDB(query_all, function(result){
 
         let json_class_all = JSON.parse( JSON.stringify(result) );
 
@@ -43,9 +38,9 @@ function getAllClass(callback) {
 
 function getMyList(user, callback) {
 
-    let query_my = g_function.eval_template(query_my_template, {user : user});
+    let query_my = globalFunction.evalTemplate(globalFunction.makeTemplate(queryConfig.get_my_class), {user : user});
 
-    module_db.executeDB(query_my, function(result){
+    mysqlConnector.executeDB(query_my, function(result){
 
         let json_class_my = JSON.parse( JSON.stringify(result) );
         if(json_class_my.length === 0) callback(null);
@@ -92,16 +87,16 @@ function getMyList(user, callback) {
 
 function enterClass(user, classs, callback) {
 
-    let query_info = g_function.eval_template(query_info_template, {classs : classs});
-    let query_subclass_of_parent = g_function.eval_template(query_subclass_of_parent_template, {classs : classs});
+    let query_info = globalFunction.evalTemplate(globalFunction.makeTemplate(queryConfig.get_class_info), {classs : classs});
+    let query_subclass_of_parent = globalFunction.evalTemplate(globalFunction.makeTemplate(queryConfig.get_subclass_of_parent), {classs : classs});
 
-    module_db.executeDB(query_info, function(result){
+    mysqlConnector.executeDB(query_info, function(result){
 
         let json_class = JSON.parse( JSON.stringify(result) );
 
         if(json_class.length > 0) {
 
-            module_db.executeDB(query_subclass_of_parent, function (result) {
+            mysqlConnector.executeDB(query_subclass_of_parent, function (result) {
 
                 let json_subclass = JSON.parse( JSON.stringify(result) );
 
@@ -118,9 +113,9 @@ function enterClass(user, classs, callback) {
 
 function getSubClass(subclass, callback) {
 
-    let query_subclass_info = g_function.eval_template(query_subclass_info_template, {subclass : subclass});
+    let query_subclass_info = globalFunction.evalTemplate(globalFunction.makeTemplate(queryConfig.get_subclass_info), {subclass : subclass});
 
-    module_db.executeDB(query_subclass_info, function(result){
+    mysqlConnector.executeDB(query_subclass_info, function(result){
 
         let json_subclass = JSON.parse( JSON.stringify(result) );
 
@@ -135,7 +130,7 @@ function submitCode(user, subclass, code, socket_front) {
 
     if(subclass === 3) { // mnist
 
-        let socket = io.connect('http://gpu.ddukddak.io:8801/code', {reconnect: true});
+        let socket = socketClient.connect('http://gpu.ddukddak.io:8801/code', {reconnect: true});
 
         socket.on('response', function (json) {
 
@@ -174,8 +169,6 @@ function submitCode(user, subclass, code, socket_front) {
 
         });
 
-    } else if(subclass === 4) {
-
     }
 
 }
@@ -194,7 +187,7 @@ module.exports = {
 
     my : function (token, callback) {
 
-        user_function.tokenCheck(token, function (json_login) {
+        userFunction.tokenCheck(token, function (json_login) {
 
             if(json_login.id === null) callback( JSON.parse( `{ "login":0 }` ) );
             else {
@@ -213,7 +206,7 @@ module.exports = {
 
     all : function (token, callback) {
 
-        user_function.tokenCheck(token, function (json_login) {
+        userFunction.tokenCheck(token, function (json_login) {
 
             if(json_login.id === null) callback( JSON.parse( `{ "login":0 }` ) );
             else {
@@ -232,7 +225,7 @@ module.exports = {
 
     enter : function (token, classs, callback) {
 
-        user_function.tokenCheck(token, function (json_login) {
+        userFunction.tokenCheck(token, function (json_login) {
 
             if(json_login.id === null) callback( JSON.parse( `{ "login":0 }` ) );
             else {
@@ -261,7 +254,7 @@ module.exports = {
 
     submit : function (token, subclass, code, socket_front) {
 
-        user_function.tokenCheck(token, function (json_login) {
+        userFunction.tokenCheck(token, function (json_login) {
 
             if(json_login.id === null) console.log( JSON.parse( `{ "login":0 }` ) );
             else submitCode(json_login.id, subclass, code, socket_front);
@@ -285,6 +278,7 @@ module.exports = {
                     },
                 body:
                     {
+                        style : style,
                         image: data.toString('base64')
                     },
                 json: true
