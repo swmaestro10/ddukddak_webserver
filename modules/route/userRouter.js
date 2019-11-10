@@ -36,7 +36,7 @@ router.post('/signup', function(request, response) {
 });
 
 // get user info
-router.post('/info', function (request, response) {
+router.post('/info', function(request, response) {
 
     let token = request.body.token;
 

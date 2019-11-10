@@ -4,15 +4,16 @@ let globalFunction = require('./globalFunction');
 let aesConfig = require('../../config/aes.json');
 let queryConfig = require('../../config/query.json');
 
-let query_login_template = "`" + queryConfig.check_login + "`";
-let query_signup_template = "`" + queryConfig.create_user + "`";
-let query_info_template = "`" + queryConfig.get_info + "`";
+// templates for db query
+let loginQueryTemplate = globalFunction.makeTemplate(queryConfig.check_login);
+let signupQueryTemplate = globalFunction.makeTemplate(queryConfig.create_user);
+let infoQueryTemplate = globalFunction.makeTemplate(queryConfig.get_info);
 
 function checkLogin(email, pw, callback) {
 
-    let query_login = globalFunction.evalTemplate(query_login_template, {email : email, pw : pw});
+    let loginQuery = globalFunction.evalTemplate(loginQueryTemplate, {email : email, pw : pw});
 
-    mysqlConnector.executeDB(query_login, function(result) {
+    mysqlConnector.executeDB(loginQuery, function(result) {
 
         let json_login = JSON.parse( JSON.stringify(result) );
 
@@ -25,9 +26,9 @@ function checkLogin(email, pw, callback) {
 
 function createUser(email, pw, name, callback) {
 
-    let query_signup = globalFunction.evalTemplate(query_signup_template, {email : email, pw : pw, name : name});
+    let signupQuery = globalFunction.evalTemplate(signupQueryTemplate, {email : email, pw : pw, name : name});
 
-    mysqlConnector.executeDB(query_signup, function(result) {
+    mysqlConnector.executeDB(signupQuery, function(result) {
 
         callback( 1 );
 
@@ -37,9 +38,9 @@ function createUser(email, pw, name, callback) {
 
 function getInfo(id, callback) {
 
-    let query_info = globalFunction.evalTemplate(query_info_template, {id : id});
+    let infoQuery = globalFunction.evalTemplate(infoQueryTemplate, {id : id});
 
-    mysqlConnector.executeDB(query_info, function(result) {
+    mysqlConnector.executeDB(infoQuery, function(result) {
 
         if(result.length > 0) callback( JSON.stringify(result[0]) );
         else callback(null);

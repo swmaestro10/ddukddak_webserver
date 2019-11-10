@@ -1,5 +1,5 @@
 let socketServer = require("socket.io");
-let class_function = require('./function/classFunction');
+let classFunction = require('./function/classFunction');
 
 function startServer() {
 
@@ -12,7 +12,7 @@ function startServer() {
 
             console.log(json);
 
-            class_function.submit(json.token, json.subclass, json.code, socket);
+            classFunction.submit(json.token, json.subclass, json.code, socket);
 
         });
 

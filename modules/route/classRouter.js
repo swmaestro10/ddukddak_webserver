@@ -5,11 +5,11 @@ let fileGetter = require('../fileGetter');
 let router = express.Router();
 
 //  getclass info
-router.get('/id/:id', function (request, response) {
+router.get('/id/:id', function(request, response) {
 
     let id = request.params.id;
 
-    classFunction.class(id, function (result) {
+    classFunction.class(id, function(result) {
 
         response.writeHead(200);
         response.end(JSON.stringify(result));
@@ -19,11 +19,11 @@ router.get('/id/:id', function (request, response) {
 });
 
 // get my classes
-router.post('/my', function (request, response) {
+router.post('/my', function(request, response) {
 
     let token = request.body.token;
 
-    classFunction.my(token, function (result) {
+    classFunction.my(token, function(result) {
 
         response.writeHead(200);
         response.end(JSON.stringify(result));
@@ -33,7 +33,7 @@ router.post('/my', function (request, response) {
 });
 
 // get all classes
-router.post('/all', function (request, response) {
+router.post('/all', function(request, response) {
 
     let token = request.body.token;
 
@@ -47,12 +47,12 @@ router.post('/all', function (request, response) {
 });
 
 // enter a class
-router.post('/enter', function (request, response) {
+router.post('/enter', function(request, response) {
 
     let token = request.body.token;
     let classs = request.body.class;
 
-    classFunction.enter(token, classs, function (result) {
+    classFunction.enter(token, classs, function(result) {
 
         response.writeHead(200);
         response.end(JSON.stringify(result));
@@ -62,11 +62,11 @@ router.post('/enter', function (request, response) {
 });
 
 // get subclass info
-router.get('/sub/id/:id', function (request, response) {
+router.get('/sub/id/:id', function(request, response) {
 
     let id = request.params.id;
 
-    classFunction.subclass(id, function (result) {
+    classFunction.subclass(id, function(result) {
 
         response.writeHead(200);
         response.end(JSON.stringify(result));
@@ -76,7 +76,7 @@ router.get('/sub/id/:id', function (request, response) {
 });
 
 // submit code
-router.post('/sub/submit', function (request, response) {
+router.post('/sub/submit', function(request, response) {
 
     let token = request.body.token;
     let subclass = request.body.subclass;
@@ -88,7 +88,7 @@ router.post('/sub/submit', function (request, response) {
 });
 
 // submit image
-router.post('/sub/image', function (request, response) {
+router.post('/sub/image', function(request, response) {
 
     fileGetter(request, response, function(err) {
 
@@ -101,7 +101,7 @@ router.post('/sub/image', function (request, response) {
         // style
         let style = request.body.style;
 
-        classFunction.submitImage(file, style, function (result) {
+        classFunction.submitImage(file, style, function(result) {
 
             response.writeHead(200, {"Context-Type": "image/jpeg"});
             response.write(result);

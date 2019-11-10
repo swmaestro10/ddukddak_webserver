@@ -1,3 +1,5 @@
+let https = require('https');
+let fs = require('fs');
 let express = require('express');
 let bodyParser = require('body-parser');
 let cors = require('cors');
@@ -5,6 +7,7 @@ let mysqlConnector = require('./modules/mysqlConnector');
 let socketServer =  require('./modules/socketServer');
 let userRouter = require('./modules/route/userRouter');
 let classRouter = require('./modules/route/classRouter');
+let sslConfig = require('./config/ssl.json');
 
 mysqlConnector.startDB();
 socketServer.startServer();
@@ -29,4 +32,9 @@ app.get('*', function(request, response) {
 
 });
 
-app.listen(80, () => console.log('ddukddak learning web server running'));
+// HTTPS
+let httpsServer = https.createServer({
+    key: fs.readFileSync(sslConfig.privkey),
+    cert: fs.readFileSync(sslConfig.fullchain)
+}, app);
+httpsServer.listen(443);

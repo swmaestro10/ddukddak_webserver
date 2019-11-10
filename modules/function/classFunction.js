@@ -6,11 +6,17 @@ let userFunction = require('./userFunction');
 let globalFunction = require('./globalFunction');
 let queryConfig = require('../../config/query.json');
 
+// templates for db query
+let infoQueryTemplate = globalFunction.makeTemplate(queryConfig.get_class_info);
+let myQueryTemplate = globalFunction.makeTemplate(queryConfig.get_my_class);
+let parentSubclassQueryTemplate = globalFunction.makeTemplate(queryConfig.get_subclass_of_parent);
+let subclassInfoQueryTemplate  = globalFunction.makeTemplate(queryConfig.get_subclass_info);
+
 function getClass(classs, callback) {
 
-    let query_info = globalFunction.evalTemplate(globalFunction.makeTemplate(queryConfig.get_class_info), {classs : classs});
+    let infoQuery = globalFunction.evalTemplate(infoQueryTemplate, {classs : classs});
 
-    mysqlConnector.executeDB(query_info, function(result){
+    mysqlConnector.executeDB(infoQuery, function(result) {
 
         let json_class = JSON.parse( JSON.stringify(result) );
 
@@ -23,9 +29,9 @@ function getClass(classs, callback) {
 
 function getAllClass(callback) {
 
-    let query_all = queryConfig.get_all_class;
+    let allQuery = queryConfig.get_all_class;
 
-    mysqlConnector.executeDB(query_all, function(result){
+    mysqlConnector.executeDB(allQuery, function(result) {
 
         let json_class_all = JSON.parse( JSON.stringify(result) );
 
@@ -38,9 +44,9 @@ function getAllClass(callback) {
 
 function getMyList(user, callback) {
 
-    let query_my = globalFunction.evalTemplate(globalFunction.makeTemplate(queryConfig.get_my_class), {user : user});
+    let myQuery = globalFunction.evalTemplate(myQueryTemplate, {user : user});
 
-    mysqlConnector.executeDB(query_my, function(result){
+    mysqlConnector.executeDB(myQuery, function(result){
 
         let json_class_my = JSON.parse( JSON.stringify(result) );
         if(json_class_my.length === 0) callback(null);
@@ -87,16 +93,16 @@ function getMyList(user, callback) {
 
 function enterClass(user, classs, callback) {
 
-    let query_info = globalFunction.evalTemplate(globalFunction.makeTemplate(queryConfig.get_class_info), {classs : classs});
-    let query_subclass_of_parent = globalFunction.evalTemplate(globalFunction.makeTemplate(queryConfig.get_subclass_of_parent), {classs : classs});
+    let infoQuery = globalFunction.evalTemplate(infoQueryTemplate, {classs : classs});
+    let parentSubclassQuery = globalFunction.evalTemplate(parentSubclassQueryTemplate, {classs : classs});
 
-    mysqlConnector.executeDB(query_info, function(result){
+    mysqlConnector.executeDB(infoQuery, function(result){
 
         let json_class = JSON.parse( JSON.stringify(result) );
 
         if(json_class.length > 0) {
 
-            mysqlConnector.executeDB(query_subclass_of_parent, function (result) {
+            mysqlConnector.executeDB(parentSubclassQuery, function (result) {
 
                 let json_subclass = JSON.parse( JSON.stringify(result) );
 
@@ -113,9 +119,9 @@ function enterClass(user, classs, callback) {
 
 function getSubClass(subclass, callback) {
 
-    let query_subclass_info = globalFunction.evalTemplate(globalFunction.makeTemplate(queryConfig.get_subclass_info), {subclass : subclass});
+    let subclassInfoQuery = globalFunction.evalTemplate(subclassInfoQueryTemplate, {subclass : subclass});
 
-    mysqlConnector.executeDB(query_subclass_info, function(result){
+    mysqlConnector.executeDB(subclassInfoQuery, function(result){
 
         let json_subclass = JSON.parse( JSON.stringify(result) );
 
@@ -175,7 +181,7 @@ function submitCode(user, subclass, code, socket_front) {
 
 module.exports = {
 
-    class : function (id, callback) {
+    class : function(id, callback) {
 
         getClass(id, function (json_class_string) {
 
@@ -185,7 +191,7 @@ module.exports = {
 
     },
 
-    my : function (token, callback) {
+    my : function(token, callback) {
 
         userFunction.tokenCheck(token, function (json_login) {
 
@@ -204,7 +210,7 @@ module.exports = {
 
     },
 
-    all : function (token, callback) {
+    all : function(token, callback) {
 
         userFunction.tokenCheck(token, function (json_login) {
 
@@ -223,7 +229,7 @@ module.exports = {
 
     },
 
-    enter : function (token, classs, callback) {
+    enter : function(token, classs, callback) {
 
         userFunction.tokenCheck(token, function (json_login) {
 
@@ -242,7 +248,7 @@ module.exports = {
 
     },
 
-    subclass : function (id, callback) {
+    subclass : function(id, callback) {
 
         getSubClass(id, function (json_subclass_string) {
 
@@ -252,7 +258,7 @@ module.exports = {
 
     },
 
-    submit : function (token, subclass, code, socket_front) {
+    submit : function(token, subclass, code, socket_front) {
 
         userFunction.tokenCheck(token, function (json_login) {
 
@@ -263,7 +269,7 @@ module.exports = {
 
     },
 
-    submitImage : function (file, style, callback) {
+    submitImage : function(file, style, callback) {
 
         fs.readFile(`./uploads/${file}`, (err, data) => {
 
@@ -283,7 +289,7 @@ module.exports = {
                     },
                 json: true
 
-            }, function (error, res, body) {
+            }, function(error, res, body) {
 
                 if (error) throw new Error(error);
 
