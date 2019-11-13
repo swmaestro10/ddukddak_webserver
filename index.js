@@ -1,3 +1,4 @@
+let http = require('http');
 let https = require('https');
 let fs = require('fs');
 let express = require('express');
@@ -38,3 +39,7 @@ let httpsServer = https.createServer({
     cert: fs.readFileSync(sslConfig.fullchain)
 }, app);
 httpsServer.listen(443);
+
+// HTTP
+let httpServer = http.createServer(app);
+httpServer.listen(80);

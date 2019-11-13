@@ -134,48 +134,42 @@ function getSubClass(subclass, callback) {
 
 function submitCode(user, subclass, code, socket_front) {
 
-    if(subclass === 3) { // mnist
+    let socket = socketClient.connect('http://gpu.ddukddak.io:8801/code', {reconnect: true});
 
-        let socket = socketClient.connect('http://gpu.ddukddak.io:8801/code', {reconnect: true});
+    socket.on('response', function (json) {
 
-        socket.on('response', function (json) {
+        if(json !== undefined) {
 
-            if(json !== undefined) {
+            // about connection
+            if(json.data === 0) { // connected
 
-                // about connection
-                if(json.data === 0) { // connected
+                if(json.status === 1) {
 
-                    if(json.status === 1) {
+                    socket.emit('start', {'sessionId':user});
 
-                        socket.emit('start', {'sessionId':user});
+                    socket.emit('run', {'code':code});
 
-                        socket.emit('run', {'code':code});
+                } else if(json.status === 2) { // close connection
 
-                    } else if(json.status === 2) { // close connection
+                    console.log('DONE!');
 
-                        socket_front.emit('result', {'text':'DONE!'});
-
-                        console.log('DONE!');
-
-                        socket.close();
-
-                    }
-
-                } else if(json.data === 1) { // about log
-
-                    socket_front.emit('result', {'text':json.text});
-
-                } else if(json.data === 2) { // about result
-
-                    socket_front.emit('result', {'text':json.result});
+                    socket.close();
 
                 }
 
+            } else if(json.data === 1) { // about log
+
+                socket_front.emit('result', {'text':json.text});
+
+            } else if(json.data === 2) { // about result
+
+                socket_front.emit('result', {'text':json.result});
+
             }
 
-        });
+        }
 
-    }
+    });
 
 }
 

@@ -10,8 +10,6 @@ function startServer() {
 
         socket.on("submit", (json) => {
 
-            console.log(json);
-
             classFunction.submit(json.token, json.subclass, json.code, socket);
 
         });
